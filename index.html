@@ -2,310 +2,151 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>每日英文單字練習</title>
     <style>
         body {
             font-family: 'Segoe UI', Arial, sans-serif;
-            
-            /* 🎯 滿版背景圖片設定區 */
-            background-image: url('pikmin.jpg'); /* 請確保資料夾內有這張圖 */
-            background-size: cover;             /* 自動放大縮小以鋪滿整個視窗 */
-            background-position: center center; /* 圖片永遠對齊畫面正中央 */
-            background-repeat: no-repeat;       /* 防止圖片出現平鋪重複 */
-            background-attachment: fixed;       /* 固定背景，滾動網頁時背景不動 */
-            
+            background-image: url('pikmin.jpg');
+            background-size: cover;
+            background-position: center center;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
             display: flex;
             justify-content: center;
-            align-items: flex-start;
+            align-items: center;
             min-height: 100vh;
             margin: 0;
-            padding: 40px 20px;
-            box-sizing: border-box;
-            gap: 30px;
+            padding: 20px;
         }
-        
-        /* 主卡片樣式 */
         .card {
-            background: rgba(255, 255, 255, 0.95); /* 微微透明的白色，視覺質感更好 */
+            background: rgba(255, 255, 255, 0.95);
             padding: 30px;
-            border-radius: 16px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
             text-align: center;
-            width: 380px;
+            width: 100%;
+            max-width: 400px;
         }
-        h1 {
-            font-size: 38px;
-            margin: 10px 0;
-            color: #2c3e50;
-        }
-        .pos {
-            font-style: italic;
-            color: #7f8c8d;
-            font-size: 16px;
-            margin-bottom: 10px;
-        }
-        .meaning {
-            font-size: 22px;
-            color: #27ae60;
-            font-weight: bold;
-            margin-bottom: 25px;
-            min-height: 35px;
-        }
-        button {
-            background-color: #3498db;
-            color: white;
-            border: none;
-            padding: 12px 28px;
-            font-size: 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background 0.2s, transform 0.1s;
-            margin: 5px;
-            font-weight: bold;
-        }
-        button:hover { background-color: #2980b9; }
-        button:active { transform: scale(0.98); }
-        
-        .audio-box {
-            margin-top: 25px;
-            padding: 15px;
-            border: 2px dashed #bdc3c7;
-            border-radius: 10px;
-            background-color: rgba(254, 254, 254, 0.8);
-        }
-        
-        /* 側邊記事本樣式 */
-        .notebook {
-            background: rgba(255, 253, 240, 0.95); /* 仿紙張顏色 + 95% 微透明 */
-            width: 320px;
-            padding: 25px;
-            border-radius: 16px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.15);
-            border-left: 8px solid #f1c40f;
-            max-height: 80vh;
-            display: flex;
-            flex-direction: column;
-        }
-        .notebook h2 {
-            margin-top: 0;
-            color: #7f8c8d;
-            font-size: 20px;
-            border-bottom: 2px solid #f1c40f;
-            padding-bottom: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .clear-btn {
-            background-color: #e74c3c;
-            padding: 4px 10px;
-            font-size: 12px;
-            border-radius: 4px;
-        }
-        .clear-btn:hover { background-color: #c0392b; }
-        
-        .word-list {
-            overflow-y: auto;
-            flex-grow: 1;
-            text-align: left;
-            padding-right: 5px;
-        }
-        .notebook-item {
-            padding: 10px 0;
-            border-bottom: 1px dashed #ddd;
-            font-size: 15px;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        .notebook-item:hover {
-            background-color: rgba(241, 196, 15, 0.15); /* 懸停時有螢光筆提示感 */
-        }
-        .notebook-item strong { color: #2c3e50; font-size: 16px; }
+        h1 { font-size: 32px; color: #2c3e50; margin: 10px 0; cursor: pointer; }
+        .pos { font-style: italic; color: #7f8c8d; margin-bottom: 10px; }
+        .meaning { font-size: 20px; color: #27ae60; font-weight: bold; margin: 20px 0; min-height: 50px; }
+        button { background-color: #3498db; color: white; border: none; padding: 15px; font-size: 16px; border-radius: 10px; cursor: pointer; width: 100%; margin-top: 10px; }
+        .btn-list { background-color: #9b59b6; }
+        select { width: 100%; padding: 12px; border-radius: 8px; margin-bottom: 15px; font-size: 16px; border: 1px solid #ddd; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <div style="font-size: 14px; color: #95a5a6; margin-bottom: 5px;" id="today-date">TODAY</div>
-    <h1 id="word">點擊開始</h1>
+    <div style="color: #95a5a6; font-size: 14px; margin-bottom: 10px;">每日單字學習系統</div>
+    
+    <select id="day-selector" onchange="loadDay(this.value)">
+        <option value="">選擇已開放的日期</option>
+    </select>
+
+    <h1 id="word" onclick="speak()">點擊開始</h1>
     <div id="pos" class="pos">-</div>
-    <div id="meaning" class="meaning">準備好就按下方按鈕</div>
+    <div id="meaning" class="meaning">請從上方選擇日期開始</div>
 
-    <button id="action-btn" onclick="nextWord()">開始</button>
-
-    <div class="audio-box">
-        <p style="margin: 0 0 10px 0; font-size: 14px; color: #95a5a6;">發音面板</p>
-        <button onclick="speakWord(document.getElementById('word').innerText)">🔊 美式發音</button>
-    </div>
-</div>
-
-<div class="notebook">
-    <h2>
-        <span>📋 單字複習筆記</span>
-        <button class="clear-btn" onclick="clearNotebook()">清除紀錄</button>
-    </h2>
-    <div class="word-list" id="notebook-list">
-        </div>
+    <button onclick="nextWord()">下一個單字</button>
+    <button class="btn-list" onclick="openFullList()">開啟單字總覽分頁</button>
 </div>
 
 <script>
-    // 🎯 多益核心單字庫（這裡先放部分示範，你可以一直加到 600 個字以滿足 60 天的需求）
-    // 每 10 個字就是一天的量
-    const toeic600Words = [
-        // 第 1 天
-        { word: "implement", pos: "v.", meaning: "實施、執行" },
-        { word: "subordinate", pos: "n./adj.", meaning: "下屬；從屬的" },
-        { word: "innovative", pos: "adj.", meaning: "創新的、新穎的" },
-        { word: "strategy", pos: "n.", meaning: "策略、戰略" },
-        { word: "negotiate", pos: "v.", meaning: "談判、協商" },
-        { word: "reimburse", pos: "v.", meaning: "核銷、償還" },
-        { word: "lucrative", pos: "adj.", meaning: "賺錢的、有利可圖的" },
-        { word: "agenda", pos: "n.", meaning: "議程、討論主題" },
-        { word: "compromise", pos: "v./n.", meaning: "妥協、讓步" },
-        { word: "diligent", pos: "adj.", meaning: "勤奮的、用功的" },
-        
-        // 第 2 天
-        { word: "expedite", pos: "v.", meaning: "加快、加速(工作等)" },
-        { word: "fluctuate", pos: "v.", meaning: "波動、變動" },
-        { word: "incentive", pos: "n.", meaning: "誘因、獎勵" },
-        { word: "mandatory", pos: "adj.", meaning: "強制的、義務的" },
-        { word: "oversee", pos: "v.", meaning: "監督、監管" },
-        { word: "prospective", pos: "adj.", meaning: "預期的、未來的" },
-        { word: "questionnaire", pos: "n.", meaning: "問卷、調查表" },
-        { word: "revenue", pos: "n.", meaning: "收入、收益" },
-        { word: "surplus", pos: "n./adj.", meaning: "剩餘、過剩" },
-        { word: "unanimous", pos: "adj.", meaning: "全體一致的" },
-
-        // 第 3 天
-        { word: "accomplish", pos: "v.", meaning: "完成、實現" },
-        { word: "allocate", pos: "v.", meaning: "分配、分派" },
-        { word: "capability", pos: "n.", meaning: "能力、才能" },
-        { word: "crucial", pos: "adj.", meaning: "至關重要的" },
-        { word: "deficit", pos: "n.", meaning: "赤字、虧損" },
-        { word: "evaluation", pos: "n.", meaning: "評估、評價" },
-        { word: "infrastructure", pos: "n.", meaning: "基礎建設" },
-        { word: "merge", pos: "v.", meaning: "合併、融合" },
-        { word: "occupation", pos: "n.", meaning: "職業、佔領" },
-        { word: "signature", pos: "n.", meaning: "簽名、特徵" }
-        
-        // 💡 提示：你可以按照這個格式，繼續往下貼到 600 個單字（共60天份）。
+    // 請將 600 個單字補齊至此處
+    const fullWordList = [
+        { word: "implement", pos: "v.", meaning: "實施" }, { word: "subordinate", pos: "n.", meaning: "下屬" }, 
+        { word: "innovative", pos: "adj.", meaning: "創新的" }, { word: "strategy", pos: "n.", meaning: "策略" }, 
+        { word: "negotiate", pos: "v.", meaning: "談判" }, { word: "reimburse", pos: "v.", meaning: "核銷" }, 
+        { word: "lucrative", pos: "adj.", meaning: "賺錢的" }, { word: "agenda", pos: "n.", meaning: "議程" }, 
+        { word: "compromise", pos: "v.", meaning: "妥協" }, { word: "diligent", pos: "adj.", meaning: "勤奮的" }
     ];
 
-    let todaysWords = [];
-    let currentIndex = -1;
-    let isStarted = false;
-
-    // 網頁開啟時，自動初始化
-    window.onload = function() {
-        getWordsForToday();
-        updateNotebookUI();
-    };
-
-    // 核心邏輯：根據當前日期（過0:00AM自動刷新）精確計算抓取哪10個單字
-    function getWordsForToday() {
-        const today = new Date();
-        const dateString = today.toLocaleDateString('zh-TW');
-        document.getElementById("today-date").innerText = `今日進度：${dateString}`;
-        
-        // 利用「年、月、日」算出一個固定的天數序號
-        // 這樣可以確保在同一天內不論重開幾次網頁，抓到的10個字都是同一組；到了隔天 0:00 就會自動換下一組
-        const startOfCount = new Date(2024, 0, 1); // 以2024/1/1作為基準起算點
-        const diffInMs = today - startOfCount;
-        const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
-        
-        // 算出今天應該從總字庫的第幾個索引開始抓（每10個字一天）
-        // 透過 % 確保萬一超過總字庫長度時，會重頭循環
-        let startIndex = (diffInDays * 10) % toeic600Words.length;
-        
-        // 抓取今天的 10 個單字
-        todaysWords = [];
-        for (let i = 0; i < 10; i++) {
-            let targetIndex = (startIndex + i) % toeic600Words.length;
-            todaysWords.push(toeic600Words[targetIndex]);
-        }
+    let currentDayWords = [];
+    let idx = 0;
+    let currentAudio = null;
+    const startOfCount = new Date(2024, 0, 1);
+    const selector = document.getElementById('day-selector');
+    
+    for (let i = 1; i <= 60; i++) {
+        let opt = document.createElement('option');
+        opt.value = i; opt.innerHTML = `第 ${i} 天進度`;
+        selector.appendChild(opt);
     }
 
-    // 切換下一個單字
-    function nextWord() {
-        if (!isStarted) {
-            document.getElementById("action-btn").innerText = "下一個";
-            isStarted = true;
-        }
+    function loadDay(day) {
+        if(!day) return;
+        const now = new Date();
+        const daysPassed = Math.floor((now - startOfCount) / (1000 * 60 * 60 * 24)) + 1;
 
-        // 在今天的 10 個單字裡循環切換
-        currentIndex = (currentIndex + 1) % todaysWords.length;
-        const currentWord = todaysWords[currentIndex];
-
-        // 更新左側畫面
-        document.getElementById("word").innerText = currentWord.word;
-        document.getElementById("pos").innerText = currentWord.pos;
-        document.getElementById("meaning").innerText = currentWord.meaning;
-
-        // 自動記錄到右側筆記本（會持續累計歷史看過的字）
-        saveToNotebook(currentWord);
-
-        // 自動朗讀
-        speakWord(currentWord.word);
-    }
-
-    // 發音功能（已防卡死、防聲音重疊）
-    function speakWord(text) {
-        if (text === "點擊開始" || !text) return;
-
-        // 立刻中斷上一次還沒播完的聲音，防止連續快點時卡住
-        window.speechSynthesis.cancel();
-
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'en-US'; // 美式英語
-        utterance.rate = 0.95;    // 語速
-        window.speechSynthesis.speak(utterance);
-    }
-
-    // 儲存到瀏覽器的本地筆記本資料庫（LocalStorage）
-    function saveToNotebook(wordObj) {
-        let savedList = JSON.parse(localStorage.getItem('toeic_60_days_notebook')) || [];
-        
-        // 檢查筆記本內是否已經有這個字，沒有的話才加進去（避免重複顯示）
-        const exists = savedList.some(item => item.word === wordObj.word);
-        if (!exists) {
-            savedList.unshift(wordObj); // 最新的字排在筆記本最上面
-            localStorage.setItem('toeic_60_days_notebook', JSON.stringify(savedList));
-            updateNotebookUI();
-        }
-    }
-
-    // 更新右側筆記本介面
-    function updateNotebookUI() {
-        const savedList = JSON.parse(localStorage.getItem('toeic_60_days_notebook')) || [];
-        const container = document.getElementById("notebook-list");
-        container.innerHTML = "";
-
-        if (savedList.length === 0) {
-            container.innerHTML = "<p style='color:#aaa; text-align:center; margin-top:20px;'>這裡會持續累積你每天看過的單字喔！</p>";
+        if (parseInt(day) > daysPassed) {
+            alert("還沒到那天喔！請專注於當前的學習。");
+            document.getElementById("day-selector").value = "";
             return;
         }
 
-        savedList.forEach(item => {
-            const div = document.createElement("div");
-            div.className = "notebook-item";
-            
-            // 🎯 【關鍵功能】點擊筆記本內的任何一條單字，都會觸發唸法
-            div.onclick = () => speakWord(item.word);
-            
-            div.innerHTML = `<strong>${item.word}</strong> <span style="color:#7f8c8d; font-size:13px;">(${item.pos})</span><br><span style="color:#555;">${item.meaning}</span>`;
-            container.appendChild(div);
-        });
+        const start = (day - 1) * 10;
+        currentDayWords = fullWordList.slice(start, start + 10);
+        idx = 0;
+        updateUI();
     }
 
-    // 清除筆記本紀錄
-    function clearNotebook() {
-        if (confirm("確定要清空目前累積的所有複習紀錄嗎？")) {
-            localStorage.removeItem('toeic_60_days_notebook');
-            updateNotebookUI();
+    function saveToHistory(wordObj) {
+        let history = JSON.parse(localStorage.getItem('my_word_history')) || [];
+        if (!history.some(item => item.word === wordObj.word)) {
+            history.push(wordObj);
+            localStorage.setItem('my_word_history', JSON.stringify(history));
         }
     }
-</script>
 
+    function updateUI() {
+        if(currentDayWords.length === 0) return;
+        const w = currentDayWords[idx];
+        document.getElementById("word").innerText = w.word;
+        document.getElementById("pos").innerText = w.pos;
+        document.getElementById("meaning").innerText = w.meaning;
+        saveToHistory(w);
+        speak();
+    }
+
+    function nextWord() {
+        if(currentDayWords.length === 0) return alert("請先從上方選擇日期");
+        idx = (idx + 1) % currentDayWords.length;
+        updateUI();
+    }
+
+    function speak() {
+        const text = document.getElementById("word").innerText;
+        if (text === "點擊開始" || text === "請從上方選擇日期開始") return;
+        if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; }
+        
+        const googleTTSUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=en&client=tw-ob&q=${encodeURIComponent(text)}`;
+        currentAudio = new Audio(googleTTSUrl);
+        currentAudio.play();
+    }
+
+    function openFullList() {
+        const history = JSON.parse(localStorage.getItem('my_word_history')) || [];
+        const newWindow = window.open("", "_blank");
+        let html = `
+        <html><head><title>單字總覽</title>
+        <style>body{font-family:sans-serif; padding:20px;} .item{padding:12px; border-bottom:1px solid #eee; cursor:pointer;} .item:hover{background:#f0f7ff;}</style>
+        </head><body><h1>已學單字總覽 (點擊發音)</h1>`;
+        
+        history.forEach((w, i) => {
+            html += `<div class='item' onclick="speak('${w.word}')"><strong>${i+1}. ${w.word}</strong> (${w.pos}) - ${w.meaning}</div>`;
+        });
+        
+        html += `<script>
+            function speak(text) {
+                const url = 'https://translate.google.com/translate_tts?ie=UTF-8&tl=en&client=tw-ob&q=' + encodeURIComponent(text);
+                new Audio(url).play();
+            }
+        <\/script></body></html>`;
+        
+        newWindow.document.write(html);
+    }
+</script>
 </body>
 </html>
