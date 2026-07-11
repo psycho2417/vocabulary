@@ -2,150 +2,119 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>每日英文單字練習</title>
+    <title>阿穎的英文學習日記</title>
+    <script src="words.js"></script>
     <style>
-        body {
-            font-family: 'Segoe UI', Arial, sans-serif;
-            background-image: url('pikmin.jpg');
-            background-size: cover;
-            background-position: center center;
-            background-attachment: fixed;
-            background-repeat: no-repeat;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
-        }
-        .card {
-            background: rgba(255, 255, 255, 0.95);
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            text-align: center;
-            width: 100%;
-            max-width: 400px;
-        }
-        h1 { font-size: 32px; color: #2c3e50; margin: 10px 0; cursor: pointer; }
-        .pos { font-style: italic; color: #7f8c8d; margin-bottom: 10px; }
-        .meaning { font-size: 20px; color: #27ae60; font-weight: bold; margin: 20px 0; min-height: 50px; }
-        button { background-color: #3498db; color: white; border: none; padding: 15px; font-size: 16px; border-radius: 10px; cursor: pointer; width: 100%; margin-top: 10px; }
-        .btn-list { background-color: #9b59b6; }
-        select { width: 100%; padding: 12px; border-radius: 8px; margin-bottom: 15px; font-size: 16px; border: 1px solid #ddd; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: url('pikmin.jpg') center/cover fixed; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
+        .card { background: rgba(255, 255, 255, 0.95); padding: 30px; border-radius: 20px; width: 100%; max-width: 400px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        h1 { font-size: 32px; color: #2c3e50; font-weight: bold; cursor: pointer; margin: 10px 0; }
+        .meaning { font-size: 20px; color: #27ae60; margin: 20px 0; min-height: 30px; }
+        button { background: #3498db; color: white; border: none; padding: 15px; border-radius: 10px; cursor: pointer; width: 100%; margin-bottom: 15px; }
+        #search-box { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
+        #history-list { margin-top: 20px; text-align: left; max-height: 250px; overflow-y: auto; border-top: 1px solid #eee; padding-top: 10px; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <div style="color: #95a5a6; font-size: 14px; margin-bottom: 10px;">每日單字學習系統</div>
+    <h1 id="word" onclick="speak()">阿穎的英文學習日記</h1>
+    <div id="meaning" class="meaning">-</div>
+    <button onclick="getRandomWord()">隨機抽取單字</button>
     
-    <select id="day-selector" onchange="loadDay(this.value)">
-        <option value="">選擇已開放的日期</option>
-    </select>
-
-    <h1 id="word" onclick="speak()">點擊開始</h1>
-    <div id="pos" class="pos">-</div>
-    <div id="meaning" class="meaning">請從上方選擇日期開始</div>
-
-    <button onclick="nextWord()">下一個單字</button>
-    <button class="btn-list" onclick="openFullList()">開啟單字總覽分頁</button>
+    <input type="text" id="search-box" placeholder="搜尋已學單字..." onkeyup="renderHistory()">
+    <div id="history-list"><strong>已學清單:</strong></div>
 </div>
 
 <script>
-    // 請將 600 個單字補齊至此處
-    const fullWordList = [
-        { word: "implement", pos: "v.", meaning: "實施" }, { word: "subordinate", pos: "n.", meaning: "下屬" }, 
-        { word: "innovative", pos: "adj.", meaning: "創新的" }, { word: "strategy", pos: "n.", meaning: "策略" }, 
-        { word: "negotiate", pos: "v.", meaning: "談判" }, { word: "reimburse", pos: "v.", meaning: "核銷" }, 
-        { word: "lucrative", pos: "adj.", meaning: "賺錢的" }, { word: "agenda", pos: "n.", meaning: "議程" }, 
-        { word: "compromise", pos: "v.", meaning: "妥協" }, { word: "diligent", pos: "adj.", meaning: "勤奮的" }
-    ];
-
-    let currentDayWords = [];
-    let idx = 0;
-    let currentAudio = null;
-    const startOfCount = new Date(2024, 0, 1);
-    const selector = document.getElementById('day-selector');
-    
-    for (let i = 1; i <= 60; i++) {
-        let opt = document.createElement('option');
-        opt.value = i; opt.innerHTML = `第 ${i} 天進度`;
-        selector.appendChild(opt);
-    }
-
-    function loadDay(day) {
-        if(!day) return;
-        const now = new Date();
-        const daysPassed = Math.floor((now - startOfCount) / (1000 * 60 * 60 * 24)) + 1;
-
-        if (parseInt(day) > daysPassed) {
-            alert("還沒到那天喔！請專注於當前的學習。");
-            document.getElementById("day-selector").value = "";
-            return;
-        }
-
-        const start = (day - 1) * 10;
-        currentDayWords = fullWordList.slice(start, start + 10);
-        idx = 0;
-        updateUI();
-    }
-
-    function saveToHistory(wordObj) {
-        let history = JSON.parse(localStorage.getItem('my_word_history')) || [];
-        if (!history.some(item => item.word === wordObj.word)) {
-            history.push(wordObj);
-            localStorage.setItem('my_word_history', JSON.stringify(history));
-        }
-    }
-
-    function updateUI() {
-        if(currentDayWords.length === 0) return;
-        const w = currentDayWords[idx];
-        document.getElementById("word").innerText = w.word;
-        document.getElementById("pos").innerText = w.pos;
-        document.getElementById("meaning").innerText = w.meaning;
-        saveToHistory(w);
-        speak();
-    }
-
-    function nextWord() {
-        if(currentDayWords.length === 0) return alert("請先從上方選擇日期");
-        idx = (idx + 1) % currentDayWords.length;
-        updateUI();
-    }
+    // 確保 words.js 裡的變數名稱為 words，這裡我們進行對應
+    // 如果 words.js 裡用的是 wordDb，請將下方改為 wordDb
+    const currentDb = typeof words !== 'undefined' ? words : wordDb; 
+    let learnedWords = [];
 
     function speak() {
         const text = document.getElementById("word").innerText;
-        if (text === "點擊開始" || text === "請從上方選擇日期開始") return;
-        if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; }
-        
-        const googleTTSUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=en&client=tw-ob&q=${encodeURIComponent(text)}`;
-        currentAudio = new Audio(googleTTSUrl);
-        currentAudio.play();
+        if (text === "點擊抽單字") return;
+        window.speechSynthesis.cancel();
+        let u = new SpeechSynthesisUtterance(text);
+        u.lang = 'en-US';
+        window.speechSynthesis.speak(u);
     }
 
-    function openFullList() {
-        const history = JSON.parse(localStorage.getItem('my_word_history')) || [];
-        const newWindow = window.open("", "_blank");
-        let html = `
-        <html><head><title>單字總覽</title>
-        <style>body{font-family:sans-serif; padding:20px;} .item{padding:12px; border-bottom:1px solid #eee; cursor:pointer;} .item:hover{background:#f0f7ff;}</style>
-        </head><body><h1>已學單字總覽 (點擊發音)</h1>`;
+    function getRandomWord() {
+        if (learnedWords.length >= currentDb.length) return alert("全部學完啦！");
         
-        history.forEach((w, i) => {
-            html += `<div class='item' onclick="speak('${w.word}')"><strong>${i+1}. ${w.word}</strong> (${w.pos}) - ${w.meaning}</div>`;
-        });
+        let randomWord;
+        do {
+            randomWord = currentDb[Math.floor(Math.random() * currentDb.length)];
+        } while (learnedWords.includes(randomWord));
+
+        learnedWords.push(randomWord);
+        document.getElementById("word").innerText = randomWord.word;
+        document.getElementById("meaning").innerText = randomWord.meaning;
         
-        html += `<script>
-            function speak(text) {
-                const url = 'https://translate.google.com/translate_tts?ie=UTF-8&tl=en&client=tw-ob&q=' + encodeURIComponent(text);
-                new Audio(url).play();
+        speak();
+        renderHistory();
+    }
+
+    // 在 script 區塊的最上方加入一個變數來追蹤是否在搜尋中
+    let isSearching = false;
+
+    function renderHistory() {
+        const query = document.getElementById('search-box').value.toLowerCase();
+        const listDiv = document.getElementById('history-list');
+        
+        // 如果搜尋欄是空的，關閉搜尋模式並恢復正常顯示
+        if (!query) {
+            isSearching = false;
+            updateListDisplay();
+            return;
+        }
+
+        // 開始搜尋模式
+        isSearching = true;
+        listDiv.innerHTML = "<strong>搜尋結果 (點擊加入學習):</strong>";
+        
+        currentDb.forEach(w => {
+            if(w.word.toLowerCase().includes(query) || w.meaning.includes(query)) {
+                const item = document.createElement('div');
+                item.style.cursor = 'pointer';
+                item.style.padding = '5px 0';
+                item.style.borderBottom = '1px solid #eee';
+                item.style.color = learnedWords.includes(w) ? '#27ae60' : '#34495e';
+                item.innerHTML = `${w.word} - ${w.meaning} ${learnedWords.includes(w) ? ' (已學)' : ''}`;
+                
+                item.onclick = function() {
+                    if (!learnedWords.includes(w)) {
+                        learnedWords.push(w);
+                    }
+                    document.getElementById("word").innerText = w.word;
+                    document.getElementById("meaning").innerText = w.meaning;
+                    speak();
+                    
+                    // 【關鍵優化】點擊後不強迫清空搜尋欄，保持當前搜尋狀態
+                    // 我們只更新列表，不跳回已學清單，除非使用者主動刪除關鍵字
+                };
+                listDiv.appendChild(item);
             }
-        <\/script></body></html>`;
-        
-        newWindow.document.write(html);
+        });
+    }
+
+    function updateListDisplay() {
+        const listDiv = document.getElementById('history-list');
+        listDiv.innerHTML = "<strong>已學清單:</strong>";
+        [...learnedWords].reverse().forEach(w => {
+            const item = document.createElement('div');
+            item.style.cursor = 'pointer';
+            item.style.padding = '5px 0';
+            item.style.borderBottom = '1px solid #eee';
+            item.innerHTML = `<strong>${w.word}</strong> - ${w.meaning}`;
+            item.onclick = () => {
+                document.getElementById("word").innerText = w.word;
+                document.getElementById("meaning").innerText = w.meaning;
+                speak();
+            };
+            listDiv.appendChild(item);
+        });
     }
 </script>
 </body>
